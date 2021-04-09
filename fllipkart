@@ -1,0 +1,140 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[44]:
+
+
+from bs4 import BeautifulSoup as soup
+from urllib.request import urlopen as uReq
+
+
+# In[45]:
+
+
+my_url = 'https://www.flipkart.com/search?q=mi&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=on&as=off'
+
+
+# In[46]:
+
+
+uClient =uReq(my_url)    #opens the connection, open webpage and tightly loaded
+page_html = uClient.read() #dump all the data and stote in the variable
+uClient.close()
+page_soup = soup(page_html , 'html.parser') 
+
+
+# In[47]:
+
+
+#insert the class name of the product
+#find all the div tag
+
+containers =page_soup.findAll("div",{"class": "_13oc-S"})
+
+print(len(containers))   #45 products in one page
+
+
+# In[48]:
+
+
+#prettify is a function to bring the html in structure or organized manner
+
+print(soup.prettify(containers[0]))
+
+
+# In[49]:
+
+
+#travesing the elements
+
+container = containers[0]
+print(container.div.img['alt'])
+
+
+# In[65]:
+
+
+
+price = container.findAll("div",{"class": "col col-5-12 nlI3QM"})
+print(price[0].text)
+
+
+# In[51]:
+
+
+
+ratings = container.findAll("div",{"class": "gUuXy-"})
+print(ratings[0].text)
+
+
+# In[66]:
+
+
+filename = "flipkart.csv"
+f = open(filename,"w")
+
+
+# In[59]:
+
+
+headers = "Product_name, Pricing, Ratings\n"
+f.write(headers)
+
+
+# In[60]:
+
+
+for container in containers:
+    product_name = container.div.img["alt"]
+    #print(product_name)
+    
+    price_container = container.findAll("div",{"class": "col col-5-12 nlI3QM"})
+    price = price_container[0].text.strip()    #strip to eliminate all the unnecessary components(remove extra spacing)
+    
+    rating_container =container.findAll("div",{"class": "gUuXy-"})
+    rating = rating_container[0].text
+    
+    
+    print(product_name)
+    print( price)
+    print( rating)
+    
+
+
+# In[61]:
+
+
+#string parsing
+
+trim_price = ''.join(price.split(','))
+rm_rupee = trim_price.split("₹")
+add_rs_price = "Rs." + rm_rupee[1]
+split_price =add_rs_price.split('E')
+final_price = split_price[0]
+
+
+# In[62]:
+
+
+split_rating = rating.split(" ")
+final_rating = split_rating[0]
+
+
+# In[63]:
+
+
+print(product_name.replace(",","|") + "," + final_price + "," + final_rating + "\n")
+f.write(product_name.replace(",","|") + "," + final_price + "," + final_rating + "\n")
+
+
+# In[39]:
+
+
+f.close()
+
+
+# In[ ]:
+
+
+
+
